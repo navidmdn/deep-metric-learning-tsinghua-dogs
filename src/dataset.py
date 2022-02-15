@@ -1,11 +1,11 @@
 import numpy as np
-from torch.utils.data import Subset
+from torch.utils.data import Subset, Dataset as TorchDataset
 from torchvision.datasets import ImageFolder
 from PIL import ImageFile
 
 from itertools import groupby
 from typing import List, Tuple, Dict
-
+import pickle
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -27,6 +27,23 @@ class Dataset(ImageFolder):
         sample = self.loader(path)
         if self.transform is not None:
             sample = self.transform(sample)
+
+        return sample, target
+
+
+class UserBioDataset(TorchDataset):
+    def __init__(self, data_dir: str):
+        super().__init__()
+        self.data_dir = data_dir
+
+        with open(data_dir, 'rb') as f:
+            self.data = pickle.load(f)
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def __getitem__(self, index):
+        sample, target = self.data[index]
 
         return sample, target
 
